@@ -1,0 +1,296 @@
+what do you think is the best data structure for those :
+ פונקציה bfs – מקבלת גרף וקודקוד מקור ומחזירה גרף שהוא עץ מושרש (שהשורש הוא קודקוד המקור כמובן) שהתקבל מסריקת BFS.
+פונקציה dfs – מקבלת גרף וקודקוד ממנו תתחיל הסריקה ומחזירה גרף (עץ או יער) המתקבל לפי סריקת DFS. (עץ זה יכיל קודקודים מקוריים ורק צלעות מסוג tree edges).
+פונקציה dijkstra – מקבלת גרף וקודקוד התחלה ומחזירה עץ ממושקל של מסלולים קצרים ביותר.
+פונקציה prim – מקבלת גרף, מחשבת את העץ הפורש המינימלי ומחזירה אותו (כלומר מחזירה גרף המייצג את העץ).
+פונקציה kruskal – כמו סעיף הקודם.
+ ?
+
+---
+Given these algorithms, I recommend implementing:
+
+A Queue class for BFS
+A Stack class for DFS (if not using recursion)
+A PriorityQueue class for Dijkstra and Prim
+A DisjointSet class for Kruskal
+---
+
+give me implementation of PriorityQueue and DisjointSet in python
+
+---
+Here's the implementation of PriorityQueue and DisjointSet data structures in Python:
+
+```python
+class PriorityQueue:
+    def __init__(self, max_size):
+        self.heap = [None] * max_size  # Array to store (vertex, priority) tuples
+        self.positions = [-1] * max_size  # Keep track of vertices' positions in heap
+        self.size = 0
+        self.capacity = max_size
+    
+    def is_empty(self):
+        return self.size == 0
+    
+    def contains(self, vertex):
+        return self.positions[vertex] != -1
+    
+    def get_priority(self, vertex):
+        position = self.positions[vertex]
+        if position != -1:
+            return self.heap[position][1]
+        return -1  # Not found
+    
+    def swap_nodes(self, i, j):
+        # Update positions
+        vertex_i = self.heap[i][0]
+        vertex_j = self.heap[j][0]
+        
+        self.positions[vertex_i] = j
+        self.positions[vertex_j] = i
+        
+        # Swap heap elements
+        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+    
+    def heapify(self, idx):
+        smallest = idx
+        left = 2 * idx + 1
+        right = 2 * idx + 2
+        
+        # Find smallest among node, left child and right child
+        if left < self.size and self.heap[left][1] < self.heap[smallest][1]:
+            smallest = left
+        
+        if right < self.size and self.heap[right][1] < self.heap[smallest][1]:
+            smallest = right
+        
+        # If smallest is not the node itself, swap and continue heapifying
+        if smallest != idx:
+            self.swap_nodes(idx, smallest)
+            self.heapify(smallest)
+    
+    def insert(self, vertex, priority):
+        if self.size == self.capacity:
+            return  # Queue is full
+        
+        # Insert at the end
+        idx = self.size
+        self.heap[idx] = (vertex, priority)
+        self.positions[vertex] = idx
+        self.size += 1
+        
+        # Fix the min heap property
+        while idx > 0 and self.heap[(idx - 1) // 2][1] > self.heap[idx][1]:
+            self.swap_nodes(idx, (idx - 1) // 2)
+            idx = (idx - 1) // 2
+    
+    def extract_min(self):
+        if self.is_empty():
+            return -1
+        
+        # Store the minimum value (root of heap)
+        min_vertex = self.heap[0][0]
+        
+        # Replace root with last element
+        self.positions[min_vertex] = -1
+        self.heap[0] = self.heap[self.size - 1]
+        self.positions[self.heap[0][0]] = 0
+        self.size -= 1
+        
+        # Restore the heap property
+        self.heapify(0)
+        
+        return min_vertex
+    
+    def decrease_key(self, vertex, new_priority):
+        # Find the index of the vertex
+        idx = self.positions[vertex]
+        
+        if idx == -1 or self.heap[idx][1] <= new_priority:
+            return  # Vertex not in queue or new priority is not smaller
+        
+        # Update priority
+        self.heap[idx] = (vertex, new_priority)
+        
+        # Fix heap property upward
+        while idx > 0 and self.heap[(idx - 1) // 2][1] > self.heap[idx][1]:
+            self.swap_nodes(idx, (idx - 1) // 2)
+            idx = (idx - 1) // 2
+
+
+class DisjointSet:
+    def __init__(self, n):
+        self.parent = list(range(n))  # Each element is initially its own parent
+        self.rank = [0] * n           # Rank is used for union by rank optimization
+    
+    def find(self, x):
+        # Path compression: make every node on path point directly to the root
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+    
+    def union(self, x, y):
+        # Find the representatives (roots) of the sets
+        root_x = self.find(x)
+        root_y = self.find(y)
+        
+        # If they're already in the same set
+        if root_x == root_y:
+            return
+        
+        # Union by rank: attach smaller rank tree under root of higher rank tree
+        if self.rank[root_x] < self.rank[root_y]:
+            self.parent[root_x] = root_y
+        elif self.rank[root_x] > self.rank[root_y]:
+            self.parent[root_y] = root_x
+        else:
+            # If ranks are same, make one as root and increment its rank
+            self.parent[root_y] = root_x
+            self.rank[root_x] += 1
+    
+    def same_set(self, x, y):
+        return self.find(x) == self.find(y)
+```
+
+1. **PriorityQueue**:
+   - Implemented as a min-heap
+   - Supports insert, extract_min, decrease_key operations
+   - Tracks positions of vertices for efficient updates
+   - Useful for Dijkstra's and Prim's algorithms
+
+2. **DisjointSet** (Union-Find):
+   - Implements path compression for efficient find operations
+   - Uses union by rank for balanced trees
+   - Provides find, union, and same_set operations
+   - Ideal for Kruskal's algorithm to detect cycles
+
+You can use these implementations directly in Python or adapt them for your specific needs.
+
+---
+
+give me implementation of prim in python
+
+---
+Here's an implementation of Prim's algorithm in Python for finding the minimum spanning tree of a graph:
+
+```python
+import heapq
+
+def prim(graph):
+    """
+    Implements Prim's algorithm to find the minimum spanning tree of a graph.
+    
+    Args:
+        graph: Dictionary where keys are nodes and values are lists of (neighbor, weight) tuples
+    
+    Returns:
+        A list of (u, v, weight) edges that form the minimum spanning tree
+    """
+    # Start with an arbitrary node (here we choose the first one)
+    start_node = next(iter(graph))
+    
+    # Set to keep track of nodes that are already in the MST
+    in_mst = {start_node}
+    
+    # Priority queue to store edges (weight, from_node, to_node)
+    edge_heap = []
+    
+    # Add all edges from the start node to the heap
+    for neighbor, weight in graph[start_node]:
+        heapq.heappush(edge_heap, (weight, start_node, neighbor))
+    
+    # List to store MST edges
+    mst_edges = []
+    
+    # Continue until all nodes are included in the MST
+    # or until the heap is empty (for disconnected graphs)
+    while edge_heap and len(in_mst) < len(graph):
+        # Get the edge with the smallest weight
+        weight, from_node, to_node = heapq.heappop(edge_heap)
+        
+        # If the destination node is already in the MST, skip this edge
+        if to_node in in_mst:
+            continue
+        
+        # Add the destination node to the MST
+        in_mst.add(to_node)
+        
+        # Add the edge to the MST
+        mst_edges.append((from_node, to_node, weight))
+        
+        # Add all edges from the newly added node to the heap
+        for neighbor, edge_weight in graph[to_node]:
+            # Only add edges to nodes not yet in the MST
+            if neighbor not in in_mst:
+                heapq.heappush(edge_heap, (edge_weight, to_node, neighbor))
+    
+    return mst_edges
+
+# Example usage
+if __name__ == "__main__":
+    # Sample graph represented as an adjacency list with weights
+    # Each node maps to a list of (neighbor, weight) tuples
+    graph = {
+        'A': [('B', 2), ('D', 1)],
+        'B': [('A', 2), ('D', 2), ('C', 3)],
+        'C': [('B', 3), ('D', 4)],
+        'D': [('A', 1), ('B', 2), ('C', 4)]
+    }
+    
+    mst = prim(graph)
+    
+    print("Minimum Spanning Tree edges:")
+    for u, v, weight in mst:
+        print(f"{u} -- {v}: {weight}")
+    
+    # Calculate total weight of MST
+    total_weight = sum(weight for _, _, weight in mst)
+    print(f"Total MST weight: {total_weight}")
+```
+
+This implementation:
+1. Uses a min-heap to efficiently select the edge with the smallest weight
+2. Starts from an arbitrary node and grows the MST one edge at a time
+3. Returns the list of edges (with their weights) that form the minimum spanning tree
+4. Has a time complexity of O(E log E) where E is the number of edges in the graph
+
+The example at the end demonstrates how to use the function with a sample graph and prints the resulting MST edges along with their total weight.
+---
+
+This are the the header files of my graph class and the algorithm class. Give me an example of how should i write my tests
+
+---
+To write good tests for your graph algorithms files, you should follow a pattern of setting up test data, running the method you want to test, and then verifying the results. Here's an example of how to write a test for one of your functions:
+
+```cpp
+void printTestResult(char *testName, bool passed)
+{
+    printf("%-40s [%s]\n", testName, passed ? "PASSED" : "FAILED");
+}
+
+void testAddEdge() {
+    // Setup: Create a graph and add some edges
+    Graph g(4);
+    g.addEdge(0, 1, 5);   // Add edge with weight 5
+    g.addEdge(1, 2);      // Add edge with default weight 1
+    g.addEdge(2, 3, 3);   // Add edge with weight 3
+    
+    // Verification: Check if edges were added correctly
+    bool passed = true;
+    
+    // Check if edges exist in both directions (undirected graph)
+    passed = passed && g.hasEdge(0, 1) && g.hasEdge(1, 0);
+    
+    // Check if weights are correct
+    passed = passed && (g.getWeight(0, 1) == 5);
+    passed = passed && (g.getWeight(1, 2) == 1);
+    passed = passed && (g.getWeight(2, 3) == 3);
+    
+    // Edge case: Test adding edge with invalid vertex
+    g.addEdge(3, 4, 2);   // Vertex 4 is out of bounds
+    passed = passed && !g.hasEdge(3, 4);  // Should not be added
+    
+    // Print test result
+    printTestResult("Add Edge Test", passed);
+}
+```
+---

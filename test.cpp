@@ -4,7 +4,7 @@
 
 using namespace graph;
 
-void printTestResult(const char *testName, bool passed)
+void printTestResult(char *testName, bool passed)
 {
     printf("%-40s [%s]\n", testName, passed ? "PASSED" : "FAILED");
 }
