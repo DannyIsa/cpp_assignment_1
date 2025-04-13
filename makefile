@@ -26,6 +26,6 @@ valgrind: Main
 	valgrind --leak-check=full ./Main
 
 clean:
-	rm -f *.o Main
+	rm -f *.o Main Test
 
 .PHONY: all clean test valgrind

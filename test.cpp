@@ -253,11 +253,6 @@ void testKruskalAlgorithm()
 
 int main()
 {
-    printf("Running unit tests for Graph Algorithms project\n");
-    printf("==============================================\n\n");
-
-    printf("Graph Class Tests:\n");
-    printf("-----------------\n");
     testGraphConstructor();
     testAddEdge();
     testRemoveEdge();
@@ -265,8 +260,6 @@ int main()
     testGetWeight();
     printf("\n");
 
-    printf("Algorithms Tests:\n");
-    printf("----------------\n");
     testBFSAlgorithm();
     testDFSAlgorithm();
     testDijkstraAlgorithm();
